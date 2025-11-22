@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  nanovote:
+    build: .
+    container_name: nanovote
+    ports:
+      - "9527:9527"
+    volumes:
+      - ./data:/data
+    environment:
+      - DATA_DIR=/data
+      - APP_HOST=0.0.0.0
+      - APP_PORT=9527
+    restart: unless-stopped
