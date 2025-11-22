@@ -121,12 +121,12 @@ HTML_BASE = """
         }
     </style>
 </head>
-<body class="min-h-screen w-full bg-[#F5F5F7] text-neutral-900 antialiased flex flex-col items-center justify-center p-6 relative overflow-hidden">
+<body class="h-screen w-full bg-[#F5F5F7] text-neutral-900 antialiased flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden">
     <!-- 极简氛围光 -->
-    <div class="absolute top-[-10%] left-[20%] w-[800px] h-[800px] bg-white rounded-full blur-[120px] mix-blend-overlay pointer-events-none"></div>
-    <div class="absolute bottom-[-10%] right-[20%] w-[600px] h-[600px] bg-indigo-100/40 rounded-full blur-[100px] mix-blend-multiply pointer-events-none"></div>
+    <div class="absolute top-[-10%] left-[10%] md:left-[20%] w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-white rounded-full blur-[80px] md:blur-[120px] mix-blend-overlay pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[10%] md:right-[20%] w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-indigo-100/40 rounded-full blur-[60px] md:blur-[100px] mix-blend-multiply pointer-events-none"></div>
 
-    <main class="relative z-10 w-full max-w-[420px]">
+    <main class="relative z-10 w-full max-w-[420px] max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col">
         {% block content %}{% endblock %}
     </main>
 </body>
@@ -143,6 +143,26 @@ PAGE_CREATE = """
     }
     .grid-animate.visible { grid-template-rows: 1fr; opacity: 1; margin-bottom: 0.75rem; }
     .grid-animate.hidden { grid-template-rows: 0fr; opacity: 0; margin-bottom: 0; }
+
+    /* 自定义滚动条样式 */
+    .options-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+    .options-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .options-scroll::-webkit-scrollbar-thumb {
+        background: #d4d4d4;
+        border-radius: 3px;
+    }
+    .options-scroll::-webkit-scrollbar-thumb:hover {
+        background: #a3a3a3;
+    }
+    /* Firefox 滚动条样式 */
+    .options-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: #d4d4d4 transparent;
+    }
 </style>
 <div x-data="{
     options: [{id: 1, text: '', isNew: false, deleting: false}, {id: 2, text: '', isNew: false, deleting: false}],
@@ -189,34 +209,37 @@ PAGE_CREATE = """
             this.loading = false;
         }
     }
-}" class="w-full animate-fade-in-up">
-    <div class="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/60 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.03] transition-all duration-500">
+}" class="w-full h-full flex flex-col animate-fade-in-up">
+    <div class="bg-white/80 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/60 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.03] transition-all duration-500 h-full flex flex-col">
 
-        <!-- 错误提示 -->
-        <div x-show="error" x-cloak
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 -translate-y-2"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             class="mb-6 p-3 bg-rose-50 text-rose-600 text-sm rounded-xl border border-rose-100" x-text="error"></div>
+        <!-- 固定部分：错误提示 + 问题输入 -->
+        <div class="flex-shrink-0">
+            <!-- 错误提示 -->
+            <div x-show="error" x-cloak
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 -translate-y-2"
+                 x-transition:enter-end="opacity-100 translate-y-0"
+                 class="mb-6 p-3 bg-rose-50 text-rose-600 text-sm rounded-xl border border-rose-100" x-text="error"></div>
 
-        <!-- 问题输入 -->
-        <div class="mb-8 group">
-            <label class="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2 ml-1 group-focus-within:text-black transition-colors duration-300">
-                Question
-            </label>
-            <div class="relative">
-                <input x-model="title" type="text" maxlength="100" placeholder="What are we deciding?"
-                    class="w-full bg-[#F9F9F9] text-xl font-medium text-neutral-900 placeholder:text-neutral-300/80 rounded-2xl px-5 py-4 border border-transparent outline-none focus:bg-white focus:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] focus:ring-1 focus:ring-black/5 transition-all duration-300 ease-out" autofocus>
+            <!-- 问题输入 -->
+            <div class="mb-6 group">
+                <label class="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2 ml-1 group-focus-within:text-black transition-colors duration-300">
+                    Question
+                </label>
+                <div class="relative">
+                    <input x-model="title" type="text" maxlength="100" placeholder="What are we deciding?"
+                        class="w-full bg-[#F9F9F9] text-xl font-medium text-neutral-900 placeholder:text-neutral-300/80 rounded-2xl px-5 py-4 border border-transparent outline-none focus:bg-white focus:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] focus:ring-1 focus:ring-black/5 transition-all duration-300 ease-out" autofocus>
+                </div>
             </div>
         </div>
 
-        <!-- 选项列表 -->
-        <div class="mb-6">
+        <!-- 滚动部分：选项列表 -->
+        <div class="flex-1 overflow-y-auto mb-6 min-h-0">
             <label class="block text-xs font-medium text-neutral-400 uppercase tracking-wider ml-1 mb-3">
                 Options
             </label>
 
-            <div class="w-full">
+            <div class="w-full pr-1 options-scroll">
                 <template x-for="(opt, index) in options" :key="opt.id">
                     <div class="grid-animate overflow-hidden"
                          :class="opt.deleting ? 'hidden' : (opt.isNew ? 'hidden' : 'visible')"
@@ -253,16 +276,18 @@ PAGE_CREATE = """
             </button>
         </div>
 
-        <!-- 提交按钮 -->
-        <button @click="submit()" :disabled="loading || !title || options.filter(o => !o.deleting).some(o => !o.text.trim())"
-            class="w-full h-14 rounded-[1.2rem] font-medium text-base flex items-center justify-center gap-2 transition-all duration-300 ease-out bg-black text-white shadow-[0_8px_20px_-6px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_25px_-8px_rgba(0,0,0,0.3)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none disabled:cursor-not-allowed">
-            <span x-show="!loading">Create Poll</span>
-            <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-            <svg x-show="loading" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-        </button>
+        <!-- 固定部分：提交按钮 -->
+        <div class="flex-shrink-0">
+            <button @click="submit()" :disabled="loading || !title || options.filter(o => !o.deleting).some(o => !o.text.trim())"
+                class="w-full h-14 rounded-[1.2rem] font-medium text-base flex items-center justify-center gap-2 transition-all duration-300 ease-out bg-black text-white shadow-[0_8px_20px_-6px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_25px_-8px_rgba(0,0,0,0.3)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none disabled:cursor-not-allowed">
+                <span x-show="!loading">Create Poll</span>
+                <svg x-show="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                <svg x-show="loading" class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -309,27 +334,29 @@ PAGE_VOTE = """
             }
         } catch(e) { console.error('Sync failed'); }
     }
-}" class="w-full animate-fade-in-up">
-    <div class="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/60 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.03] transition-all duration-700"
+}" class="w-full h-full flex flex-col animate-fade-in-up">
+    <div class="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/60 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.03] transition-all duration-700 h-full flex flex-col"
          :class="voted ? 'scale-[1.01]' : ''">
 
-        <!-- 标题 -->
-        <div class="mb-10 text-center">
+        <!-- 固定部分：标题 -->
+        <div class="flex-shrink-0 mb-6 text-center">
             <h1 class="text-xl font-medium text-neutral-900 tracking-tight leading-tight break-words">
                 {{ poll_title }}
             </h1>
         </div>
 
-        <!-- 加载状态 -->
-        <div x-show="loading" class="text-center py-8 text-neutral-400">
-            <svg class="animate-spin w-5 h-5 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-        </div>
+        <!-- 滚动部分：加载状态 + 选项列表 -->
+        <div class="flex-1 overflow-y-auto min-h-0 mb-6">
+            <!-- 加载状态 -->
+            <div x-show="loading" class="text-center py-8 text-neutral-400">
+                <svg class="animate-spin w-5 h-5 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
 
-        <!-- 选项列表 -->
-        <div x-show="!loading" class="space-y-3">
+            <!-- 选项列表 -->
+            <div x-show="!loading" class="space-y-3 pr-1">
             <template x-for="opt in options" :key="opt.id">
                 <button @click="vote(opt.id)" :disabled="voted"
                     class="group relative w-full h-[72px] rounded-[1.2rem] overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] flex items-center px-1 outline-none focus-visible:ring-2 focus-visible:ring-black/20"
@@ -385,10 +412,11 @@ PAGE_VOTE = """
                     </div>
                 </button>
             </template>
+            </div>
         </div>
 
-        <!-- 底部信息 -->
-        <div x-show="!loading" class="mt-10 pt-6 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-neutral-400 font-medium">
+        <!-- 固定部分：底部信息 -->
+        <div x-show="!loading" class="flex-shrink-0 pt-6 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-neutral-400 font-medium border-t border-neutral-100">
             <span class="flex items-center gap-2">
                 <span class="w-1.5 h-1.5 rounded-full transition-colors duration-500"
                       :class="voted ? 'bg-indigo-600' : 'bg-neutral-300'"></span>
