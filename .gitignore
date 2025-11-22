@@ -1,0 +1,157 @@
+# ==========================================
+# Python
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environments
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.virtualenv/
+
+# Distribution / Packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# ==========================================
+# NanoVote 数据库与数据
+# ==========================================
+# SQLite 数据库文件
+nanovote.db
+nanovote.db-shm
+nanovote.db-wal
+*.db
+*.db-journal
+
+# 数据目录（用户投票数据）
+data/
+*.sqlite
+*.sqlite3
+
+# ==========================================
+# 环境配置
+# ==========================================
+.env
+.env.local
+.env.*.local
+*.env
+
+# ==========================================
+# IDE & 编辑器
+# ==========================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ==========================================
+# 操作系统
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
+
+# ==========================================
+# 日志与临时文件
+# ==========================================
+*.log
+logs/
+*.tmp
+*.temp
+*.pid
+*.seed
+*.pid.lock
+
+# ==========================================
+# Docker
+# ==========================================
+.dockerignore.bak
+
+# ==========================================
+# 其他
+# ==========================================
+# 备份文件
+*.bak
+*.backup
+*.old
+
+# 压缩文件（通常不需要提交）
+*.zip
+*.tar.gz
+*.rar
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# pyenv
+.python-version
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/

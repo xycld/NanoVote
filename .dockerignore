@@ -1,0 +1,14 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.git
+.env
+nanovote.db
+nanovote.db-shm
+nanovote.db-wal
+venv/
+data/
+*.md
+LICENSE
+CLAUDE.md
