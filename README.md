@@ -1,49 +1,55 @@
-# NanoVote v2.1
+<p align="center">
+  <img src="logo.svg" width="120" height="120" alt="NanoVote Logo">
+</p>
 
-极简、匿名、高性能的投票系统。
+# NanoVote
 
-**极速加载 | 美观现代**
+[English](README.md) | [简体中文](README.zh-CN.md)
 
-## 快速开始
+Minimalist, anonymous, high-performance voting system.
 
-### 方式 1: Docker 部署（推荐）
+**Lightning Fast | Modern UI**
+
+## Quick Start
+
+### Option 1: Docker Deployment (Recommended)
 
 ```bash
-# 1. 构建镜像
+# 1. Build image
 docker build -t nanovote .
 
-# 2. 运行容器（数据持久化到本地 data 目录）
+# 2. Run container (persist data to local data directory)
 docker run -d \
   -p 9527:9527 \
   -v $(pwd)/data:/data \
   --name nanovote \
   nanovote
 
-# 3. 访问应用
-# 打开浏览器访问: http://localhost:9527
+# 3. Access application
+# Open browser at: http://localhost:9527
 ```
 
-### 方式 2: 本地运行
+### Option 2: Local Development
 
 ```bash
-# 1. 安装依赖（推荐使用 pnpm 的 Python 等效工具 uv，或使用 pip）
+# 1. Install dependencies (recommend using uv, Python's equivalent to pnpm, or use pip)
 pip install -r requirements.txt
 
-# 2. 启动服务
+# 2. Start service
 python main.py
 
-# 3. 访问应用
-# 打开浏览器访问: http://localhost:9527
+# 3. Access application
+# Open browser at: http://localhost:9527
 ```
 
-### 自定义端口
+### Custom Port
 
 ```bash
-# 方式 1: 使用环境变量
+# Option 1: Using environment variable
 export APP_PORT=3000
 python main.py
 
-# 方式 2: Docker 运行时指定
+# Option 2: Specify when running Docker
 docker run -d \
   -p 3000:3000 \
   -e APP_PORT=3000 \
@@ -52,37 +58,40 @@ docker run -d \
   nanovote
 ```
 
-## 核心功能
+## Core Features
 
-1. **创建投票**
+1. **Create Polls**
 
-   - 支持 2-20 个选项
-   - 标题最长 100 字符
-   - 选项最长 50 字符
-2. **匿名投票**
+   - Support 2-20 options
+   - Title max 100 characters
+   - Option max 50 characters
 
-   - 无需注册/登录
-   - 基于 localStorage 防重复投票
-   - 服务端 IP 限流
-3. **实时统计**
+2. **Anonymous Voting**
 
-   - 投票后立即显示结果
-   - 百分比 + 票数双重展示
-   - 平滑动画过渡
-4. **自动清理**
+   - No registration/login required
+   - localStorage-based duplicate vote prevention
+   - Server-side IP rate limiting
 
-   - 最多保留 1000 个投票
-   - 自动删除最旧的投票
-   - 后台异步执行
+3. **Real-time Statistics**
 
-## 环境变量
+   - Results displayed immediately after voting
+   - Percentage + vote count display
+   - Smooth animation transitions
 
-| 变量名       | 默认值      | 说明                 |
+4. **Auto Cleanup**
+
+   - Keeps maximum 1000 polls
+   - Auto-deletes oldest polls
+   - Background async execution
+
+## Environment Variables
+
+| Variable | Default | Description |
 | ------------ | ----------- | -------------------- |
-| `DATA_DIR` | `.`       | 数据库存储目录       |
-| `APP_HOST` | `0.0.0.0` | 监听地址             |
-| `APP_PORT` | `9527`    | 监听端口（可自定义） |
+| `DATA_DIR` | `.` | Database storage directory |
+| `APP_HOST` | `0.0.0.0` | Listen address |
+| `APP_PORT` | `9527` | Listen port (customizable) |
 
-## 许可证
+## License
 
-本项目基于 MIT 许可证开源。
+This project is licensed under the MIT License.
