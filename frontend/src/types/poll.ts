@@ -11,13 +11,19 @@ export interface Poll {
   total_votes: number
   expires_at: number
   has_voted: boolean
-  voted_for: number | null
+  voted_for: number | null | number[]
+  allow_multiple?: boolean
+  min_selection?: number
+  max_selection?: number
 }
 
 export interface CreatePollRequest {
   title: string
   options: string[]
   duration: DurationOption
+  allow_multiple?: boolean
+  min_selection?: number
+  max_selection?: number
 }
 
 export interface CreatePollResponse {
@@ -27,7 +33,8 @@ export interface CreatePollResponse {
 }
 
 export interface VoteRequest {
-  option_id: number
+  option_id?: number
+  option_ids?: number[]
 }
 
 export interface VoteResponse {

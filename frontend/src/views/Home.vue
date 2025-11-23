@@ -34,12 +34,12 @@
       </div>
 
       <!-- 滚动部分：选项列表 -->
-      <div class="flex-1 overflow-y-auto mb-6 min-h-0">
-        <label class="block text-xs font-medium text-neutral-400 uppercase tracking-wider ml-1 mb-3">
+      <div class="flex-1 overflow-y-auto mb-6 min-h-0 px-1">
+        <label class="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3">
           {{ t('home.optionsLabel') }}
         </label>
 
-        <div class="w-full pr-1 options-scroll">
+        <div class="w-full options-scroll py-1">
           <div
             v-for="(opt, index) in options"
             :key="opt.id"
@@ -175,6 +175,42 @@
           </div>
         </div>
 
+        <!-- 多选配置 -->
+        <div class="mb-4">
+          <Toggle
+            label="Allow Multiple Choices"
+            :checked="allowMultiple"
+            @update:checked="allowMultiple = $event"
+          />
+
+          <!-- 平滑展开的步进器配置区域 -->
+          <div
+            class="grid transition-[grid-template-rows,opacity,margin] duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+            :class="allowMultiple ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'"
+          >
+            <div class="overflow-hidden space-y-3 pl-1">
+              <!-- 分割线装饰 -->
+              <div class="w-full h-px bg-neutral-100 mb-4" />
+
+              <NumberStepper
+                label="Min Selection"
+                :value="minSelection"
+                @update:value="minSelection = $event"
+                :min="1"
+                :max="activeOptionCount"
+              />
+
+              <NumberStepper
+                label="Max Selection"
+                :value="maxSelection"
+                @update:value="maxSelection = $event"
+                :min="minSelection"
+                :max="activeOptionCount"
+              />
+            </div>
+          </div>
+        </div>
+
         <!-- 提交按钮 -->
         <button
           @click="submit"
@@ -196,11 +232,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { pollApi } from '@/utils/api'
 import type { DurationOption } from '@/types/poll'
+import Toggle from '@/components/Toggle.vue'
+import NumberStepper from '@/components/NumberStepper.vue'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -221,6 +259,11 @@ const title = ref('')
 const duration = ref<DurationOption>('1d')
 const loading = ref(false)
 const error = ref('')
+
+// 多选配置
+const allowMultiple = ref(false)
+const minSelection = ref(1)
+const maxSelection = ref(2)
 
 // 下拉菜单状态
 const isOpen = ref(false)
@@ -246,6 +289,18 @@ const selectedLabel = computed(() => {
 const isFormValid = computed(() => {
   const validOptions = options.value.filter(o => !o.deleting && o.text.trim())
   return title.value.trim().length > 0 && validOptions.length >= 2
+})
+
+// 有效选项数量（用于 NumberStepper 的 max 限制）
+const activeOptionCount = computed(() => {
+  return options.value.filter(o => !o.deleting).length
+})
+
+// 自动调整 max_selection 当它小于 min_selection 时
+watch(minSelection, (newMin) => {
+  if (newMin > maxSelection.value) {
+    maxSelection.value = newMin
+  }
 })
 
 const initNewOption = (el: Element | unknown, opt: Option) => {
@@ -353,11 +408,20 @@ const submit = async () => {
   error.value = ''
 
   try {
-    const response = await pollApi.createPoll({
+    const requestData: any = {
       title: title.value.trim(),
       options: validOptions,
       duration: duration.value
-    })
+    }
+
+    // 如果启用了多选，添加多选配置
+    if (allowMultiple.value) {
+      requestData.allow_multiple = true
+      requestData.min_selection = minSelection.value
+      requestData.max_selection = maxSelection.value
+    }
+
+    const response = await pollApi.createPoll(requestData)
 
     // 跳转到投票页面
     router.push(`/p/${response.poll_id}`)

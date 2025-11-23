@@ -13,25 +13,53 @@ class VoteService:
     async def vote(
         self,
         poll_id: str,
-        option_id: int,
-        client_ip: str
+        option_id: Optional[int] = None,
+        option_ids: Optional[List[int]] = None,
+        client_ip: str = ""
     ) -> tuple[bool, Optional[str], List[PollOption], int]:
         """
-        投票
+        投票（支持单选和多选）
 
         Returns:
             (success, error_message, updated_options, total_votes)
         """
+        # 确定投票的选项列表
+        voting_options = []
+        if option_ids is not None and len(option_ids) > 0:
+            voting_options = option_ids
+        elif option_id is not None:
+            voting_options = [option_id]
+        else:
+            return False, "必须提供 option_id 或 option_ids", [], 0
+
         # 检查投票是否存在
-        poll_exists = await self.redis.exists(f"poll:{poll_id}")
+        poll_key = f"poll:{poll_id}"
+        poll_exists = await self.redis.exists(poll_key)
         if not poll_exists:
             return False, "投票不存在或已过期", [], 0
 
-        # 检查选项是否存在
+        # 获取投票配置
+        poll_data = await self.redis.hgetall(poll_key)
+        allow_multiple = poll_data.get("allow_multiple", "False") == "True"
+        min_selection = int(poll_data.get("min_selection", 1)) if "min_selection" in poll_data else None
+        max_selection = int(poll_data.get("max_selection", 1)) if "max_selection" in poll_data else None
+
+        # 验证多选配置
+        if not allow_multiple and len(voting_options) > 1:
+            return False, "该投票不允许多选", [], 0
+
+        if allow_multiple:
+            if min_selection is not None and len(voting_options) < min_selection:
+                return False, f"至少需要选择 {min_selection} 个选项", [], 0
+            if max_selection is not None and len(voting_options) > max_selection:
+                return False, f"最多只能选择 {max_selection} 个选项", [], 0
+
+        # 检查所有选项是否存在
         options_key = f"poll:{poll_id}:options"
-        option_exists = await self.redis.hexists(options_key, str(option_id))
-        if not option_exists:
-            return False, "无效的选项", [], 0
+        for opt_id in voting_options:
+            option_exists = await self.redis.hexists(options_key, str(opt_id))
+            if not option_exists:
+                return False, f"无效的选项: {opt_id}", [], 0
 
         # 检查IP是否已投票
         ip_hash = self._hash_ip(client_ip)
@@ -46,30 +74,35 @@ class VoteService:
         if poll_ttl <= 0:
             return False, "投票已过期", [], 0
 
-        # 使用Lua脚本执行原子操作
+        # 使用Lua脚本执行原子操作（支持多选）
         lua_script = """
         local options_key = KEYS[1]
         local stats_key = KEYS[2]
         local vote_key = KEYS[3]
-        local option_id = ARGV[1]
+        local option_ids_json = ARGV[1]
         local ttl = tonumber(ARGV[2])
 
-        -- 增加选项投票数
-        local option_json = redis.call('HGET', options_key, option_id)
-        if not option_json then
-            return {err = 'Invalid option'}
+        -- 解析选项ID列表
+        local option_ids = cjson.decode(option_ids_json)
+
+        -- 增加每个选项的投票数
+        for _, option_id in ipairs(option_ids) do
+            local option_json = redis.call('HGET', options_key, tostring(option_id))
+            if not option_json then
+                return {err = 'Invalid option: ' .. option_id}
+            end
+
+            local option_data = cjson.decode(option_json)
+            option_data.votes = option_data.votes + 1
+            redis.call('HSET', options_key, tostring(option_id), cjson.encode(option_data))
         end
 
-        local option_data = cjson.decode(option_json)
-        option_data.votes = option_data.votes + 1
-        redis.call('HSET', options_key, option_id, cjson.encode(option_data))
-
-        -- 增加总投票数
-        redis.call('HINCRBY', stats_key, 'total_votes', 1)
+        -- 增加总投票数（按选项数量）
+        redis.call('HINCRBY', stats_key, 'total_votes', #option_ids)
         redis.call('HINCRBY', stats_key, 'unique_voters', 1)
 
-        -- 记录IP投票
-        redis.call('SETEX', vote_key, ttl, option_id)
+        -- 记录IP投票（保存为JSON数组）
+        redis.call('SETEX', vote_key, ttl, option_ids_json)
 
         return {ok = true}
         """
@@ -81,7 +114,7 @@ class VoteService:
                 options_key,
                 f"poll:{poll_id}:stats",
                 vote_key,
-                str(option_id),
+                json.dumps(voting_options),
                 str(poll_ttl)
             )
         except Exception as e:

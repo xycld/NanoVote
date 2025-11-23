@@ -17,7 +17,10 @@ class PollService:
         self,
         title: str,
         options: List[str],
-        duration: str
+        duration: str,
+        allow_multiple: bool = False,
+        min_selection: Optional[int] = None,
+        max_selection: Optional[int] = None
     ) -> tuple[str, int]:
         """
         创建投票
@@ -38,12 +41,22 @@ class PollService:
 
         # 1. 存储投票主体
         poll_key = f"poll:{poll_id}"
-        pipe.hset(poll_key, mapping={
+        poll_data = {
             "title": title,
             "created_at": created_at,
             "expires_at": expires_at,
-            "duration": duration
-        })
+            "duration": duration,
+            "allow_multiple": str(allow_multiple)
+        }
+
+        # 添加多选配置（如果启用）
+        if allow_multiple:
+            if min_selection is not None:
+                poll_data["min_selection"] = str(min_selection)
+            if max_selection is not None:
+                poll_data["max_selection"] = str(max_selection)
+
+        pipe.hset(poll_key, mapping=poll_data)
         pipe.expire(poll_key, ttl)
 
         # 2. 存储选项
@@ -89,7 +102,16 @@ class PollService:
         # 检查IP是否已投票
         ip_hash = self._hash_ip(client_ip)
         voted_for_str = await self.redis.get(f"poll:{poll_id}:vote:{ip_hash}")
-        voted_for = int(voted_for_str) if voted_for_str else None
+
+        # 解析 voted_for（支持单选和多选）
+        voted_for = None
+        if voted_for_str:
+            try:
+                # 尝试解析为 JSON 数组（多选）
+                voted_for = json.loads(voted_for_str)
+            except (json.JSONDecodeError, ValueError):
+                # 单个数字（单选）
+                voted_for = int(voted_for_str)
 
         # 构造选项列表
         options = []
@@ -104,6 +126,11 @@ class PollService:
                 votes=int(option_dict["votes"])
             ))
 
+        # 解析多选配置
+        allow_multiple = poll_data.get("allow_multiple", "False") == "True"
+        min_selection = int(poll_data["min_selection"]) if "min_selection" in poll_data else None
+        max_selection = int(poll_data["max_selection"]) if "max_selection" in poll_data else None
+
         return PollResponse(
             poll_id=poll_id,
             title=poll_data["title"],
@@ -111,7 +138,10 @@ class PollService:
             total_votes=int(stats_data.get("total_votes", 0)),
             expires_at=int(poll_data["expires_at"]),
             has_voted=voted_for is not None,
-            voted_for=voted_for
+            voted_for=voted_for,
+            allow_multiple=allow_multiple,
+            min_selection=min_selection,
+            max_selection=max_selection
         )
 
     async def check_poll_exists(self, poll_id: str) -> bool:

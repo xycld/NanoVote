@@ -41,7 +41,10 @@ async def create_poll(data: CreatePollRequest, request: Request):
         poll_id, expires_at = await poll_service.create_poll(
             title=data.title,
             options=data.options,
-            duration=data.duration
+            duration=data.duration,
+            allow_multiple=data.allow_multiple,
+            min_selection=data.min_selection,
+            max_selection=data.max_selection
         )
 
         return CreatePollResponse(
@@ -71,7 +74,7 @@ async def get_poll(poll_id: str, request: Request):
 
 @router.post("/{poll_id}/vote", response_model=VoteResponse)
 async def vote(poll_id: str, data: VoteRequest, request: Request):
-    """投票"""
+    """投票（支持单选和多选）"""
     redis = get_redis()
     vote_service = VoteService(redis)
     client_ip = get_client_ip(request)
@@ -79,21 +82,24 @@ async def vote(poll_id: str, data: VoteRequest, request: Request):
     success, error_msg, options, total_votes = await vote_service.vote(
         poll_id=poll_id,
         option_id=data.option_id,
+        option_ids=data.option_ids,
         client_ip=client_ip
     )
 
     if not success:
         raise HTTPException(status_code=400, detail=error_msg)
 
-    # 广播实时更新（WebSocket）
-    voted_option = next((opt for opt in options if opt.id == data.option_id), None)
-    if voted_option:
-        await broadcast_vote_update(
-            poll_id=poll_id,
-            option_id=data.option_id,
-            votes=voted_option.votes,
-            total_votes=total_votes
-        )
+    # 广播实时更新（WebSocket）- 支持多选
+    voted_option_ids = data.option_ids if data.option_ids else ([data.option_id] if data.option_id else [])
+    for opt_id in voted_option_ids:
+        voted_option = next((opt for opt in options if opt.id == opt_id), None)
+        if voted_option:
+            await broadcast_vote_update(
+                poll_id=poll_id,
+                option_id=opt_id,
+                votes=voted_option.votes,
+                total_votes=total_votes
+            )
 
     return VoteResponse(
         success=True,

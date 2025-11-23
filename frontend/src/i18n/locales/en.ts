@@ -42,6 +42,13 @@ export default {
     notFound: 'Poll not found or expired',
     voteFailed: 'Vote failed, please try again',
     copyFailed: 'Copy failed, please copy the link manually',
+    multipleChoice: 'Multiple Choice',
+    selectExactly: 'Select exactly {count} option | Select exactly {count} options',
+    selectBetween: 'Select between {min} and {max} options',
+    submitVotes: 'Submit {count} Vote | Submit {count} Votes',
+    selectAtLeast: 'Select at least {count} option | Select at least {count} options',
+    pickMore: 'Pick {count} more option | Pick {count} more options',
+    recorded: 'Recorded',
   },
   notFound: {
     title: 'Signal Lost',

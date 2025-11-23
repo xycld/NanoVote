@@ -42,6 +42,13 @@ export default {
     notFound: '投票不存在或已过期',
     voteFailed: '投票失败，请重试',
     copyFailed: '复制失败，请手动复制链接',
+    multipleChoice: '多选投票',
+    selectExactly: '请精确选择 {count} 项',
+    selectBetween: '选择 {min} 到 {max} 项',
+    submitVotes: '提交 {count} 票',
+    selectAtLeast: '至少选择 {count} 项',
+    pickMore: '还需选择 {count} 项',
+    recorded: '已记录',
   },
   notFound: {
     title: '信号丢失',
