@@ -178,7 +178,7 @@
         <!-- 多选配置 -->
         <div class="mb-4">
           <Toggle
-            label="Allow Multiple Choices"
+            :label="t('home.allowMultiple')"
             :checked="allowMultiple"
             @update:checked="allowMultiple = $event"
           />
@@ -193,7 +193,7 @@
               <div class="w-full h-px bg-neutral-100 mb-4" />
 
               <NumberStepper
-                label="Min Selection"
+                :label="t('home.minSelection')"
                 :value="minSelection"
                 @update:value="minSelection = $event"
                 :min="1"
@@ -201,7 +201,7 @@
               />
 
               <NumberStepper
-                label="Max Selection"
+                :label="t('home.maxSelection')"
                 :value="maxSelection"
                 @update:value="maxSelection = $event"
                 :min="minSelection"

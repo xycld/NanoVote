@@ -1,5 +1,6 @@
 import { ref, onUnmounted } from 'vue'
 import { io, Socket } from 'socket.io-client'
+import { useI18n } from 'vue-i18n'
 
 export interface VoteUpdatePayload {
   option_id: number
@@ -8,6 +9,7 @@ export interface VoteUpdatePayload {
 }
 
 export function useWebSocket() {
+  const { t } = useI18n()
   const socket = ref<Socket | null>(null)
   const isConnected = ref(false)
   const error = ref<string | null>(null)
@@ -39,7 +41,7 @@ export function useWebSocket() {
       })
 
     } catch (err) {
-      error.value = err instanceof Error ? err.message : '连接失败'
+      error.value = err instanceof Error ? err.message : t('errors.websocketConnection')
       console.error('WebSocket error:', err)
     }
   }

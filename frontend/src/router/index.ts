@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import i18n from '@/i18n'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,7 +9,6 @@ const router = createRouter({
       name: 'home',
       component: () => import('@/views/Home.vue'),
       meta: {
-        title: 'NanoVote - 极简投票系统',
         robots: 'index, follow'
       }
     },
@@ -17,7 +17,6 @@ const router = createRouter({
       name: 'poll',
       component: () => import('@/views/PollView.vue'),
       meta: {
-        title: '投票页面',
         robots: 'noindex, nofollow'
       }
     },
@@ -26,7 +25,6 @@ const router = createRouter({
       name: 'not-found',
       component: () => import('@/views/NotFound.vue'),
       meta: {
-        title: '页面未找到',
         robots: 'noindex, nofollow'
       }
     }
@@ -35,8 +33,10 @@ const router = createRouter({
 
 // 路由守卫 - SEO和标题设置
 router.afterEach((to) => {
-  // 设置页面标题
-  document.title = (to.meta.title as string) || 'NanoVote'
+  // 设置页面标题（使用i18n）
+  const routeName = to.name as string
+  const titleKey = `routes.${routeName === 'not-found' ? 'notFound' : routeName}.title`
+  document.title = i18n.global.t(titleKey) || 'NanoVote'
 
   // 设置robots meta标签
   const robotsMeta = document.querySelector('meta[name="robots"]')

@@ -20,6 +20,9 @@ export default {
     durationLabel: '投票时长',
     createPoll: '创建投票',
     createError: '创建失败，请重试',
+    allowMultiple: '允许多选',
+    minSelection: '最小选择',
+    maxSelection: '最大选择',
     duration: {
       '3m': '3 分钟',
       '30m': '30 分钟',
@@ -54,5 +57,20 @@ export default {
     title: '信号丢失',
     description: '这个投票已经消散在虚空中。它可能已过期或从未存在。',
     createNew: '创建新投票',
+  },
+  routes: {
+    home: {
+      title: 'NanoVote - 极简投票系统',
+    },
+    poll: {
+      title: '投票页面',
+    },
+    notFound: {
+      title: '页面未找到',
+    },
+  },
+  errors: {
+    websocketConnection: '连接失败',
+    network: '网络错误',
   },
 }

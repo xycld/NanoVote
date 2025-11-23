@@ -367,7 +367,7 @@ const loadPoll = async () => {
     })
 
   } catch (err) {
-    console.error('加载失败:', err)
+    console.error('Poll load failed:', err)
     router.replace({ name: 'not-found' })
   } finally {
     loading.value = false
@@ -403,7 +403,7 @@ const voteSingle = async (optionId: number) => {
     }
 
   } catch (err) {
-    console.error('投票失败:', err)
+    console.error('Vote submission failed:', err)
     // 回滚乐观更新
     if (opt) {
       opt.votes--
@@ -467,7 +467,7 @@ const voteMultiple = async () => {
     }, 600)
 
   } catch (err) {
-    console.error('投票失败:', err)
+    console.error('Vote submission failed:', err)
     alert(t('poll.voteFailed'))
   } finally {
     isSubmitting.value = false

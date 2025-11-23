@@ -20,6 +20,9 @@ export default {
     durationLabel: 'Poll Duration',
     createPoll: 'Create Poll',
     createError: 'Failed to create poll, please try again',
+    allowMultiple: 'Allow Multiple Choices',
+    minSelection: 'Min Selection',
+    maxSelection: 'Max Selection',
     duration: {
       '3m': '3 Minutes',
       '30m': '30 Minutes',
@@ -54,5 +57,20 @@ export default {
     title: 'Signal Lost',
     description: 'This poll has dissolved into the ether. It may have expired or never existed.',
     createNew: 'Create New Poll',
+  },
+  routes: {
+    home: {
+      title: 'NanoVote - Minimal Voting System',
+    },
+    poll: {
+      title: 'Poll',
+    },
+    notFound: {
+      title: 'Page Not Found',
+    },
+  },
+  errors: {
+    websocketConnection: 'Connection failed',
+    network: 'Network error',
   },
 }

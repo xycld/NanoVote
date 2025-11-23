@@ -6,6 +6,7 @@ import type {
   VoteRequest,
   VoteResponse
 } from '@/types/poll'
+import i18n from '@/i18n'
 
 const api = axios.create({
   baseURL: '/api',
@@ -31,7 +32,7 @@ api.interceptors.response.use(
     return response.data
   },
   (error) => {
-    const message = error.response?.data?.detail || error.message || '网络错误'
+    const message = error.response?.data?.detail || error.message || i18n.global.t('errors.network')
     console.error('API Error:', message)
     return Promise.reject(new Error(message))
   }
