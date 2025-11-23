@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /p/
+Disallow: /api/
+
+Sitemap: https://nanovote.example.com/sitemap.xml

@@ -1,14 +1,41 @@
-__pycache__
-*.pyc
-*.pyo
-*.pyd
+# 通用
 .git
-.env
-nanovote.db
-nanovote.db-shm
-nanovote.db-wal
-venv/
-data/
+.gitignore
 *.md
 LICENSE
-CLAUDE.md
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+.venv
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Node.js
+node_modules/
+.pnpm-store/
+dist/
+.vite/
+
+# 环境文件
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 数据文件
+*.db
+*.sqlite
+*.sqlite3
+
+# 日志
+*.log
+
+# Legacy
+legacy/
