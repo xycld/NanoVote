@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/xycld/NanoVote/raw/refs/heads/master/logo.svg" width="120" alt="NanoVote Logo">
+</p>
+
 # NanoVote
 
 极简匿名投票系统，前后端分离，纯Redis存储

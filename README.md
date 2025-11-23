@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/xycld/NanoVote/raw/refs/heads/master/logo.svg" width="120" alt="NanoVote Logo">
+</p>
+
 # NanoVote
 
 Minimal anonymous voting system with frontend-backend separation and pure Redis storage
