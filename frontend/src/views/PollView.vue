@@ -7,7 +7,7 @@
       <!-- 固定部分：标题 -->
       <div class="flex-shrink-0 mb-6 text-center">
         <h1 class="text-xl font-medium text-neutral-900 tracking-tight leading-tight break-words">
-          {{ loading ? '加载中...' : poll?.title || '' }}
+          {{ loading ? t('common.loading') : poll?.title || '' }}
         </h1>
         <p v-if="!loading && poll" class="mt-2 text-xs text-neutral-400 uppercase tracking-wider">
           {{ expiresText }}
@@ -115,7 +115,7 @@
             class="w-1.5 h-1.5 rounded-full transition-colors duration-500"
             :class="voted ? 'bg-indigo-600' : 'bg-neutral-300'"
           ></span>
-          <span>{{ voted ? 'Vote Recorded' : 'Anonymous' }}</span>
+          <span>{{ voted ? t('poll.voteRecorded') : t('poll.anonymous') }}</span>
         </span>
         <button
           @click="share"
@@ -131,6 +131,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { pollApi } from '@/utils/api'
 import { useWebSocket } from '@/composables/useWebSocket'
 import type { Poll } from '@/types/poll'
@@ -138,13 +139,14 @@ import type { VoteUpdatePayload } from '@/composables/useWebSocket'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 const poll = ref<Poll | null>(null)
 const loading = ref(true)
 const voted = ref(false)
 const selectedId = ref<number | null>(null)
 const showResults = ref(false)
-const shareText = ref('SHARE')
+const shareText = ref('')
 
 // WebSocket
 const { connect, disconnect, joinPoll, leavePoll, onVoteUpdate, offVoteUpdate } = useWebSocket()
@@ -158,15 +160,15 @@ const expiresText = computed(() => {
   const now = new Date()
   const remaining = expiresAt.getTime() - now.getTime()
 
-  if (remaining <= 0) return 'Expired'
+  if (remaining <= 0) return t('poll.expired')
 
   const days = Math.floor(remaining / 86400000)
   const hours = Math.floor((remaining % 86400000) / 3600000)
   const minutes = Math.floor((remaining % 3600000) / 60000)
 
-  if (days > 0) return `Expires in ${days} day${days > 1 ? 's' : ''}`
-  if (hours > 0) return `Expires in ${hours} hour${hours > 1 ? 's' : ''}`
-  return `Expires in ${minutes} minute${minutes > 1 ? 's' : ''}`
+  if (days > 0) return t('poll.expiresIn', { time: t('poll.days', days) })
+  if (hours > 0) return t('poll.expiresIn', { time: t('poll.hours', hours) })
+  return t('poll.expiresIn', { time: t('poll.minutes', minutes) })
 })
 
 // 加载投票数据
@@ -201,8 +203,8 @@ const loadPoll = async () => {
 
   } catch (err) {
     console.error('加载失败:', err)
-    alert('投票不存在或已过期')
-    router.push('/')
+    // 直接跳转到 NotFound 页面，不显示 alert
+    router.replace({ name: 'not-found' })
   } finally {
     loading.value = false
   }
@@ -248,7 +250,7 @@ const vote = async (optionId: number) => {
     voted.value = false
     selectedId.value = null
     showResults.value = false
-    alert('投票失败，请重试')
+    alert(t('poll.voteFailed'))
   }
 }
 
@@ -258,7 +260,7 @@ const share = async () => {
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(url)
-      shareText.value = 'COPIED'
+      shareText.value = t('common.copied')
     } else {
       // 降级方案
       const ta = document.createElement('textarea')
@@ -269,15 +271,18 @@ const share = async () => {
       ta.select()
       document.execCommand('copy')
       document.body.removeChild(ta)
-      shareText.value = 'COPIED'
+      shareText.value = t('common.copied')
     }
     setTimeout(() => {
-      shareText.value = 'SHARE'
+      shareText.value = t('common.share')
     }, 2000)
   } catch {
-    alert('复制失败，请手动复制链接')
+    alert(t('poll.copyFailed'))
   }
 }
+
+// 初始化 shareText
+shareText.value = t('common.share')
 
 onMounted(() => {
   loadPoll()

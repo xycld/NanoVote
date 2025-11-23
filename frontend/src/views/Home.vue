@@ -18,14 +18,14 @@
         <!-- 问题输入 -->
         <div class="mb-6 group">
           <label class="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2 ml-1 group-focus-within:text-black transition-colors duration-300">
-            Question
+            {{ t('home.questionLabel') }}
           </label>
           <div class="relative">
             <input
               v-model="title"
               type="text"
               maxlength="100"
-              placeholder="What are we deciding?"
+              :placeholder="t('home.questionPlaceholder')"
               class="w-full bg-[#F9F9F9] text-xl font-medium text-neutral-900 placeholder:text-neutral-300/80 rounded-2xl px-5 py-4 border border-transparent outline-none focus:bg-white focus:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.04)] focus:ring-1 focus:ring-black/5 transition-all duration-300 ease-out"
               autofocus
             >
@@ -36,7 +36,7 @@
       <!-- 滚动部分：选项列表 -->
       <div class="flex-1 overflow-y-auto mb-6 min-h-0">
         <label class="block text-xs font-medium text-neutral-400 uppercase tracking-wider ml-1 mb-3">
-          Options
+          {{ t('home.optionsLabel') }}
         </label>
 
         <div class="w-full pr-1 options-scroll">
@@ -57,7 +57,7 @@
                     v-model="opt.text"
                     type="text"
                     maxlength="50"
-                    :placeholder="'Option ' + (index + 1)"
+                    :placeholder="t('home.optionPlaceholder', { n: index + 1 })"
                     @keydown.enter.prevent="addOption"
                     class="w-full bg-white border border-neutral-200/60 text-neutral-800 text-sm font-medium rounded-xl pl-12 pr-10 py-3.5 outline-none focus:border-neutral-300 focus:ring-4 focus:ring-neutral-100 transition-all duration-200 placeholder:text-neutral-300"
                   >
@@ -86,7 +86,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
               </svg>
             </div>
-            Add Option
+            {{ t('home.addOption') }}
           </button>
         </div>
       </div>
@@ -96,7 +96,7 @@
         <!-- 持续时间选择 - 极致平滑下拉菜单 -->
         <div class="mb-4 relative group" ref="selectContainer">
           <label class="block text-xs font-medium text-neutral-400 uppercase tracking-wider mb-2 ml-1 group-focus-within:text-black transition-colors duration-300">
-            Poll Duration
+            {{ t('home.durationLabel') }}
           </label>
 
           <button
@@ -181,7 +181,7 @@
           :disabled="loading || !isFormValid"
           class="w-full h-14 rounded-[1.2rem] font-medium text-base flex items-center justify-center gap-2 transition-all duration-300 ease-out bg-black text-white shadow-[0_8px_20px_-6px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_25px_-8px_rgba(0,0,0,0.3)] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none disabled:cursor-not-allowed"
         >
-          <span v-if="!loading">Create Poll</span>
+          <span v-if="!loading">{{ t('home.createPoll') }}</span>
           <svg v-if="!loading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
           </svg>
@@ -198,10 +198,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { pollApi } from '@/utils/api'
 import type { DurationOption } from '@/types/poll'
 
 const router = useRouter()
+const { t } = useI18n()
 
 interface Option {
   id: number
@@ -228,19 +230,17 @@ const hoverStyle = ref({ top: 0, height: 0, opacity: 0 })
 const shouldOpenUpward = ref(false)
 
 // 持续时间选项
-const DURATION_OPTIONS = [
-  { label: '3 Minutes', value: '3m' as DurationOption },
-  { label: '30 Minutes', value: '30m' as DurationOption },
-  { label: '1 Hour', value: '1h' as DurationOption },
-  { label: '6 Hours', value: '6h' as DurationOption },
-  { label: '1 Day', value: '1d' as DurationOption },
-  { label: '3 Days', value: '3d' as DurationOption },
-  { label: '7 Days', value: '7d' as DurationOption },
-  { label: '10 Days', value: '10d' as DurationOption },
-]
+const DURATION_VALUES: DurationOption[] = ['3m', '30m', '1h', '6h', '1d', '3d', '7d', '10d']
+
+const DURATION_OPTIONS = computed(() =>
+  DURATION_VALUES.map(value => ({
+    label: t(`home.duration.${value}`),
+    value,
+  }))
+)
 
 const selectedLabel = computed(() => {
-  return DURATION_OPTIONS.find(opt => opt.value === duration.value)?.label || duration.value
+  return t(`home.duration.${duration.value}`)
 })
 
 const isFormValid = computed(() => {
@@ -362,7 +362,7 @@ const submit = async () => {
     // 跳转到投票页面
     router.push(`/p/${response.poll_id}`)
   } catch (err) {
-    error.value = err instanceof Error ? err.message : '创建失败，请重试'
+    error.value = err instanceof Error ? err.message : t('home.createError')
   } finally {
     loading.value = false
   }

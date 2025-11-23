@@ -11,5 +11,8 @@
 </template>
 
 <script setup lang="ts">
-// App组件 - 使用原设计的背景和布局
+import { useMeta } from '@/composables/useMeta'
+
+// 初始化元信息国际化
+useMeta()
 </script>
