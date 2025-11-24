@@ -55,9 +55,17 @@ export function useWebSocket() {
   }
 
   const joinPoll = (pollId: string) => {
-    if (socket.value && isConnected.value) {
-      socket.value.emit('join_poll', { poll_id: pollId })
+    if (!socket.value) return
+
+    const emitJoin = () => {
+      socket.value?.emit('join_poll', { poll_id: pollId })
       console.log('Joined poll:', pollId)
+    }
+
+    if (socket.value.connected) {
+      emitJoin()
+    } else {
+      socket.value.once('connect', emitJoin)
     }
   }
 
