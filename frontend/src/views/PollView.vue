@@ -61,7 +61,7 @@
               v-if="showResults"
               class="absolute inset-0 z-0 transition-all duration-1000 ease-out origin-left progress-bar"
               :class="selectedId === opt.id ? 'bg-white/20' : 'bg-neutral-100'"
-              :style="'--target-width: ' + Math.round(opt.votes / (poll.total_votes || 1) * 100) + '%'"
+              :style="{ width: Math.round(opt.votes / (poll.total_votes || 1) * 100) + '%' }"
             ></div>
 
             <!-- 内容 -->
@@ -148,7 +148,7 @@
               v-if="showResults"
               class="absolute inset-0 z-0 transition-all duration-1000 ease-out origin-left progress-bar"
               :class="selectedIds.includes(opt.id) ? 'bg-white/20' : 'bg-neutral-100'"
-              :style="'--target-width: ' + Math.round(opt.votes / (poll.total_votes || 1) * 100) + '%'"
+              :style="{ width: Math.round(opt.votes / (poll.total_votes || 1) * 100) + '%' }"
             ></div>
 
             <div class="flex items-center gap-4 relative z-10">
@@ -512,20 +512,8 @@ onUnmounted(() => {
 
 <style scoped>
 .progress-bar {
-  width: var(--target-width);
+  width: 0;
   transition: width 0.8s ease;
-  animation: expandWidth 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes expandWidth {
-  from {
-    width: 0%;
-    opacity: 0;
-  }
-  to {
-    width: var(--target-width);
-    opacity: 1;
-  }
 }
 
 @keyframes shake {
