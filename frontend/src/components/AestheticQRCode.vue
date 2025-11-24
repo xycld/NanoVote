@@ -2,8 +2,6 @@
   <div
     class="w-48 h-48 bg-white/95 rounded-[1.5rem] p-4 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.18)] border border-white/50 ring-1 ring-white/50 ring-inset flex items-center justify-center relative overflow-hidden transition-all duration-500 hover:shadow-[0_22px_50px_-14px_rgba(0,0,0,0.22)] mx-auto"
   >
-    <div class="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:8px_8px] opacity-40" />
-
     <div v-if="loading" class="w-8 h-8 border-2 border-neutral-100 border-t-neutral-300 rounded-full animate-spin" />
     <svg
       v-else-if="modules && size"
