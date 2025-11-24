@@ -36,7 +36,7 @@ router.afterEach((to) => {
   // 设置页面标题（使用i18n）
   const routeName = to.name as string
   const titleKey = `routes.${routeName === 'not-found' ? 'notFound' : routeName}.title`
-  document.title = i18n.global.t(titleKey) || 'NanoVote'
+  document.title = i18n.global.te(titleKey) ? i18n.global.t(titleKey) : 'NanoVote'
 
   // 设置robots meta标签
   const robotsMeta = document.querySelector('meta[name="robots"]')

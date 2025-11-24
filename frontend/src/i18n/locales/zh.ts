@@ -10,6 +10,8 @@ export default {
     error: '错误',
     share: '分享',
     copied: '已复制',
+    close: '关闭',
+    saveImage: '保存图片',
   },
   home: {
     questionLabel: '问题',
@@ -45,6 +47,9 @@ export default {
     notFound: '投票不存在或已过期',
     voteFailed: '投票失败，请重试',
     copyFailed: '复制失败，请手动复制链接',
+    shareTitle: '分享投票',
+    pollLink: '投票链接',
+    copy: '复制',
     multipleChoice: '多选投票',
     selectExactly: '请精确选择 {count} 项',
     selectBetween: '选择 {min} 到 {max} 项',
@@ -52,6 +57,7 @@ export default {
     selectAtLeast: '至少选择 {count} 项',
     pickMore: '还需选择 {count} 项',
     recorded: '已记录',
+    votesCount: '{count} 票',
   },
   notFound: {
     title: '信号丢失',
@@ -72,5 +78,15 @@ export default {
   errors: {
     websocketConnection: '连接失败',
     network: '网络错误',
+    pollNotFound: '投票不存在或已过期',
+    alreadyVoted: '您已经投过票了',
+    invalidOption: '无效的选项',
+    pollExpired: '投票已过期',
+    multipleNotAllowed: '该投票不允许多选',
+    minSelection: '至少选择 {count} 项',
+    maxSelection: '最多选择 {count} 项',
+    missingOption: '请至少选择一个选项',
+    createFailed: '创建失败，请重试',
+    voteFailed: '投票失败，请重试',
   },
 }

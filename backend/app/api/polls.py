@@ -54,7 +54,10 @@ async def create_poll(data: CreatePollRequest, request: Request):
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"创建失败: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail={"code": "CREATE_FAILED", "message": str(e)}
+        )
 
 
 @router.get("/{poll_id}", response_model=PollResponse)
@@ -67,7 +70,7 @@ async def get_poll(poll_id: str, request: Request):
     poll = await poll_service.get_poll(poll_id, client_ip)
 
     if not poll:
-        raise HTTPException(status_code=404, detail="投票不存在或已过期")
+        raise HTTPException(status_code=404, detail={"code": "POLL_NOT_FOUND"})
 
     return poll
 

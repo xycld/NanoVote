@@ -19,7 +19,7 @@
     <!-- 投票数和进度条 -->
     <div v-if="showResults" class="space-y-2">
       <div class="flex items-center justify-between text-sm text-gray-600">
-        <span>{{ option.votes }} 票</span>
+        <span>{{ t('poll.votesCount', { count: option.votes }, option.votes) }}</span>
       </div>
 
       <!-- 进度条 -->
@@ -47,6 +47,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { PollOption as PollOptionType } from '@/types/poll'
 
 interface Props {
@@ -66,6 +67,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   vote: [optionId: number]
 }>()
+
+const { t } = useI18n()
 
 const percentage = computed(() => {
   if (props.totalVotes === 0) return 0

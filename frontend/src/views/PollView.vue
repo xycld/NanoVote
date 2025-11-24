@@ -217,12 +217,12 @@
                 <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               </template>
               <template v-else-if="isMultipleValid">
-                <span>{{ t('poll.submitVotes', { count: selectedIds.length }) }}</span>
+                <span>{{ t('poll.submitVotes', { count: selectedIds.length }, selectedIds.length) }}</span>
                 <ArrowRight class="w-4 h-4" />
               </template>
               <template v-else>
                 <span class="text-xs font-medium uppercase tracking-wider">
-                  {{ t('poll.selectAtLeast', { count: (poll?.min_selection || 1) }) }}
+                  {{ t('poll.selectAtLeast', { count: minRequired }, minRequired) }}
                 </span>
               </template>
             </button>
@@ -234,7 +234,7 @@
             >
               <AlertCircle class="w-3 h-3" />
               <span>
-                {{ t('poll.pickMore', { count: (poll?.min_selection || 1) - selectedIds.length }) }}
+                {{ t('poll.pickMore', { count: remainingToMin }, remainingToMin) }}
               </span>
             </div>
           </div>
@@ -258,6 +258,11 @@
         </div>
       </div>
     </div>
+    <ShareModal
+      :open="isShareOpen"
+      :url="shareUrl"
+      @close="isShareOpen = false"
+    />
   </div>
 </template>
 
@@ -268,6 +273,7 @@ import { useI18n } from 'vue-i18n'
 import { Check, ArrowRight, AlertCircle } from 'lucide-vue-next'
 import { pollApi } from '@/utils/api'
 import { useWebSocket } from '@/composables/useWebSocket'
+import ShareModal from '@/components/ShareModal.vue'
 import type { Poll } from '@/types/poll'
 import type { VoteUpdatePayload } from '@/composables/useWebSocket'
 
@@ -282,13 +288,17 @@ const selectedId = ref<number | null>(null) // 单选
 const selectedIds = ref<number[]>([]) // 多选
 const shakeId = ref<number | null>(null) // 震动动画
 const showResults = ref(false)
-const shareText = ref('')
+const shareText = computed(() => t('common.share'))
 const isSubmitting = ref(false)
+const isShareOpen = ref(false)
+const shareUrl = ref('')
 
 // WebSocket
 const { connect, disconnect, joinPoll, leavePoll, onVoteUpdate, offVoteUpdate } = useWebSocket()
 
 const pollId = computed(() => route.params.id as string)
+const minRequired = computed(() => poll.value?.min_selection || 1)
+const remainingToMin = computed(() => Math.max(minRequired.value - selectedIds.value.length, 0))
 
 // 多选验证
 const isMultipleValid = computed(() => {
@@ -323,7 +333,7 @@ const getMultipleChoiceDesc = () => {
   const max = poll.value.max_selection || poll.value.options.length
 
   if (min === max) {
-    return t('poll.selectExactly', { count: min })
+    return t('poll.selectExactly', { count: min }, min)
   } else {
     return t('poll.selectBetween', { min, max })
   }
@@ -414,7 +424,8 @@ const voteSingle = async (optionId: number) => {
     voted.value = false
     selectedId.value = null
     showResults.value = false
-    alert(t('poll.voteFailed'))
+    const message = err instanceof Error ? err.message : t('poll.voteFailed')
+    alert(message)
   }
 }
 
@@ -468,43 +479,25 @@ const voteMultiple = async () => {
 
   } catch (err) {
     console.error('Vote submission failed:', err)
-    alert(t('poll.voteFailed'))
+    const message = err instanceof Error ? err.message : t('poll.voteFailed')
+    alert(message)
   } finally {
     isSubmitting.value = false
   }
 }
 
 // 分享
-const share = async () => {
-  const url = window.location.href
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(url)
-      shareText.value = t('common.copied')
-    } else {
-      // 降级方案
-      const ta = document.createElement('textarea')
-      ta.value = url
-      ta.style.position = 'fixed'
-      ta.style.left = '-9999px'
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      document.body.removeChild(ta)
-      shareText.value = t('common.copied')
-    }
-    setTimeout(() => {
-      shareText.value = t('common.share')
-    }, 2000)
-  } catch {
-    alert(t('poll.copyFailed'))
+const share = () => {
+  if (typeof window !== 'undefined') {
+    shareUrl.value = window.location.href
   }
+  isShareOpen.value = true
 }
 
-// 初始化 shareText
-shareText.value = t('common.share')
-
 onMounted(() => {
+  if (typeof window !== 'undefined') {
+    shareUrl.value = window.location.href
+  }
   loadPoll()
 })
 

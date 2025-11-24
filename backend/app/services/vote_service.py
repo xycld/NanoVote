@@ -1,6 +1,6 @@
 import json
 import hashlib
-from typing import Optional, List
+from typing import Optional, List, Union, Dict, Any
 from redis.asyncio import Redis
 
 from app.models.poll import PollOption
@@ -16,7 +16,7 @@ class VoteService:
         option_id: Optional[int] = None,
         option_ids: Optional[List[int]] = None,
         client_ip: str = ""
-    ) -> tuple[bool, Optional[str], List[PollOption], int]:
+    ) -> tuple[bool, Optional[Union[str, Dict[str, Any]]], List[PollOption], int]:
         """
         投票（支持单选和多选）
 
@@ -30,13 +30,13 @@ class VoteService:
         elif option_id is not None:
             voting_options = [option_id]
         else:
-            return False, "必须提供 option_id 或 option_ids", [], 0
+            return False, {"code": "MISSING_OPTION"}, [], 0
 
         # 检查投票是否存在
         poll_key = f"poll:{poll_id}"
         poll_exists = await self.redis.exists(poll_key)
         if not poll_exists:
-            return False, "投票不存在或已过期", [], 0
+            return False, {"code": "POLL_NOT_FOUND"}, [], 0
 
         # 获取投票配置
         poll_data = await self.redis.hgetall(poll_key)
@@ -46,20 +46,20 @@ class VoteService:
 
         # 验证多选配置
         if not allow_multiple and len(voting_options) > 1:
-            return False, "该投票不允许多选", [], 0
+            return False, {"code": "MULTIPLE_NOT_ALLOWED"}, [], 0
 
         if allow_multiple:
             if min_selection is not None and len(voting_options) < min_selection:
-                return False, f"至少需要选择 {min_selection} 个选项", [], 0
+                return False, {"code": "MIN_SELECTION", "count": min_selection}, [], 0
             if max_selection is not None and len(voting_options) > max_selection:
-                return False, f"最多只能选择 {max_selection} 个选项", [], 0
+                return False, {"code": "MAX_SELECTION", "count": max_selection}, [], 0
 
         # 检查所有选项是否存在
         options_key = f"poll:{poll_id}:options"
         for opt_id in voting_options:
             option_exists = await self.redis.hexists(options_key, str(opt_id))
             if not option_exists:
-                return False, f"无效的选项: {opt_id}", [], 0
+                return False, {"code": "INVALID_OPTION", "option_id": opt_id}, [], 0
 
         # 检查IP是否已投票
         ip_hash = self._hash_ip(client_ip)
@@ -67,12 +67,12 @@ class VoteService:
         already_voted = await self.redis.exists(vote_key)
 
         if already_voted:
-            return False, "您已经投过票了", [], 0
+            return False, {"code": "ALREADY_VOTED"}, [], 0
 
         # 获取TTL用于设置IP记录的过期时间
         poll_ttl = await self.redis.ttl(f"poll:{poll_id}")
         if poll_ttl <= 0:
-            return False, "投票已过期", [], 0
+            return False, {"code": "POLL_EXPIRED"}, [], 0
 
         # 使用Lua脚本执行原子操作（支持多选）
         lua_script = """
@@ -118,7 +118,7 @@ class VoteService:
                 str(poll_ttl)
             )
         except Exception as e:
-            return False, f"投票失败: {str(e)}", [], 0
+            return False, {"code": "VOTE_FAILED", "message": str(e)}, [], 0
 
         # 获取更新后的数据
         options_data = await self.redis.hgetall(options_key)

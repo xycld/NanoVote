@@ -6,6 +6,12 @@
   body {
     @apply bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen;
   }
+
+  input,
+  textarea,
+  select {
+    @apply text-base;
+  }
 }
 
 @layer components {

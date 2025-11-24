@@ -10,6 +10,8 @@ export default {
     error: 'Error',
     share: 'SHARE',
     copied: 'COPIED',
+    close: 'Close',
+    saveImage: 'Save Image',
   },
   home: {
     questionLabel: 'Question',
@@ -45,6 +47,9 @@ export default {
     notFound: 'Poll not found or expired',
     voteFailed: 'Vote failed, please try again',
     copyFailed: 'Copy failed, please copy the link manually',
+    shareTitle: 'Share Poll',
+    pollLink: 'Poll Link',
+    copy: 'Copy',
     multipleChoice: 'Multiple Choice',
     selectExactly: 'Select exactly {count} option | Select exactly {count} options',
     selectBetween: 'Select between {min} and {max} options',
@@ -52,6 +57,7 @@ export default {
     selectAtLeast: 'Select at least {count} option | Select at least {count} options',
     pickMore: 'Pick {count} more option | Pick {count} more options',
     recorded: 'Recorded',
+    votesCount: '{count} vote | {count} votes',
   },
   notFound: {
     title: 'Signal Lost',
@@ -72,5 +78,15 @@ export default {
   errors: {
     websocketConnection: 'Connection failed',
     network: 'Network error',
+    pollNotFound: 'Poll not found or expired',
+    alreadyVoted: 'You have already voted',
+    invalidOption: 'Invalid option',
+    pollExpired: 'Poll expired',
+    multipleNotAllowed: 'This poll does not allow multiple selection',
+    minSelection: 'Select at least {count} option | Select at least {count} options',
+    maxSelection: 'Select at most {count} option | Select at most {count} options',
+    missingOption: 'Please choose at least one option',
+    createFailed: 'Failed to create poll, please try again',
+    voteFailed: 'Failed to submit vote, please try again',
   },
 }
