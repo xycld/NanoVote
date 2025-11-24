@@ -512,6 +512,8 @@ onUnmounted(() => {
 
 <style scoped>
 .progress-bar {
+  width: var(--target-width);
+  transition: width 0.8s ease;
   animation: expandWidth 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
