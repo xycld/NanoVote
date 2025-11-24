@@ -1,9 +1,16 @@
 <template>
   <div class="w-full h-full flex flex-col animate-fade-in-up">
     <div
-      class="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/60 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.03] transition-all duration-700 h-full flex flex-col"
+      class="bg-white/70 backdrop-blur-2xl rounded-[2.5rem] p-8 border border-white/60 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)] ring-1 ring-black/[0.03] transition-all duration-700 h-full flex flex-col relative"
       :class="voted ? 'scale-[1.01]' : ''"
     >
+      <button
+        class="absolute left-5 top-5 w-9 h-9 rounded-full bg-white/90 border border-white/70 text-neutral-500 hover:text-neutral-900 shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center focus-visible:ring-2 focus-visible:ring-black/20"
+        @click="goHome"
+        aria-label="Back to create poll"
+      >
+        <ArrowLeft class="w-4 h-4" />
+      </button>
       <!-- 固定部分：标题 -->
       <div class="flex-shrink-0 mb-6 space-y-2 text-center">
         <!-- 多选标识 -->
@@ -270,7 +277,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Check, ArrowRight, AlertCircle } from 'lucide-vue-next'
+import { Check, ArrowRight, AlertCircle, ArrowLeft } from 'lucide-vue-next'
 import { pollApi } from '@/utils/api'
 import { useWebSocket } from '@/composables/useWebSocket'
 import ShareModal from '@/components/ShareModal.vue'
@@ -492,6 +499,10 @@ const share = () => {
     shareUrl.value = window.location.href
   }
   isShareOpen.value = true
+}
+
+const goHome = () => {
+  router.push({ name: 'home' })
 }
 
 onMounted(() => {
