@@ -2,6 +2,7 @@ import json
 import hashlib
 from typing import Optional, List, Union, Dict, Any
 from redis.asyncio import Redis
+from redis.exceptions import ResponseError
 
 from app.models.poll import PollOption
 
@@ -82,6 +83,11 @@ class VoteService:
         local option_ids_json = ARGV[1]
         local ttl = tonumber(ARGV[2])
 
+        -- 已投过票则直接返回错误，避免并发下重复计数
+        if redis.call('EXISTS', vote_key) == 1 then
+            return redis.error_reply('ALREADY_VOTED')
+        end
+
         -- 解析选项ID列表
         local option_ids = cjson.decode(option_ids_json)
 
@@ -89,7 +95,7 @@ class VoteService:
         for _, option_id in ipairs(option_ids) do
             local option_json = redis.call('HGET', options_key, tostring(option_id))
             if not option_json then
-                return {err = 'Invalid option: ' .. option_id}
+                return redis.error_reply('INVALID_OPTION:' .. tostring(option_id))
             end
 
             local option_data = cjson.decode(option_json)
@@ -104,7 +110,7 @@ class VoteService:
         -- 记录IP投票（保存为JSON数组）
         redis.call('SETEX', vote_key, ttl, option_ids_json)
 
-        return {ok = true}
+        return 'OK'
         """
 
         try:
@@ -117,6 +123,20 @@ class VoteService:
                 json.dumps(voting_options),
                 str(poll_ttl)
             )
+        except ResponseError as e:
+            message = str(e)
+
+            if "ALREADY_VOTED" in message:
+                return False, {"code": "ALREADY_VOTED"}, [], 0
+
+            if message.startswith("INVALID_OPTION:"):
+                try:
+                    invalid_id = int(message.split(":", 1)[1])
+                except (ValueError, IndexError):
+                    invalid_id = None
+                return False, {"code": "INVALID_OPTION", "option_id": invalid_id}, [], 0
+
+            return False, {"code": "VOTE_FAILED", "message": message}, [], 0
         except Exception as e:
             return False, {"code": "VOTE_FAILED", "message": str(e)}, [], 0
 
