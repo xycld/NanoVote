@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     redis_password: str = ""
 
     # 服务器配置
-    host: str = "0.0.0.0"
+    host: str = "::"
     port: int = 8000
     debug: bool = True
 
