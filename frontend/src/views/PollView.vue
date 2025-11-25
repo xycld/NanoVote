@@ -37,6 +37,11 @@
           {{ getMultipleChoiceDesc() }}
           <span class="text-black font-medium">({{ selectedIds.length }}/{{ poll.max_selection }})</span>
         </p>
+
+        <!-- 多选剩余时间 -->
+        <p v-if="!loading && poll?.allow_multiple" class="mt-2 text-xs text-neutral-400 uppercase tracking-wider">
+          {{ expiresText }}
+        </p>
       </div>
 
       <!-- 滚动部分：加载状态 + 选项列表 -->
