@@ -351,6 +351,31 @@ const getMultipleChoiceDesc = () => {
   }
 }
 
+// 从本地存储获取投票记录
+const getLocalVote = (id: string): { voted: boolean; votedFor: number | number[] | null } => {
+  try {
+    const key = `poll_vote_${id}`
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      const data = JSON.parse(stored)
+      return { voted: true, votedFor: data.votedFor }
+    }
+  } catch (err) {
+    console.error('Failed to read local vote:', err)
+  }
+  return { voted: false, votedFor: null }
+}
+
+// 保存投票记录到本地存储
+const saveLocalVote = (id: string, votedFor: number | number[]) => {
+  try {
+    const key = `poll_vote_${id}`
+    localStorage.setItem(key, JSON.stringify({ votedFor, timestamp: Date.now() }))
+  } catch (err) {
+    console.error('Failed to save local vote:', err)
+  }
+}
+
 // 加载投票数据
 const loadPoll = async () => {
   loading.value = true
@@ -359,16 +384,17 @@ const loadPoll = async () => {
     const data = await pollApi.getPoll(pollId.value)
     poll.value = data
 
-    // 检查是否已投票（从服务器返回的状态）
-    if (data.has_voted && data.voted_for) {
+    // 检查本地存储的投票状态
+    const localVote = getLocalVote(pollId.value)
+    if (localVote.voted && localVote.votedFor) {
       voted.value = true
 
-      if (data.allow_multiple && Array.isArray(data.voted_for)) {
+      if (data.allow_multiple && Array.isArray(localVote.votedFor)) {
         // 多选模式
-        selectedIds.value = data.voted_for
+        selectedIds.value = localVote.votedFor
       } else {
         // 单选模式
-        selectedId.value = Array.isArray(data.voted_for) ? data.voted_for[0] : data.voted_for
+        selectedId.value = Array.isArray(localVote.votedFor) ? localVote.votedFor[0] : localVote.votedFor
       }
       showResults.value = true
     }
@@ -423,6 +449,9 @@ const voteSingle = async (optionId: number) => {
       poll.value.options = response.options
       poll.value.total_votes = response.total_votes
     }
+
+    // 保存到本地存储
+    saveLocalVote(pollId.value, optionId)
 
   } catch (err) {
     console.error('Vote submission failed:', err)
@@ -483,6 +512,9 @@ const voteMultiple = async () => {
       poll.value.options = response.options
       poll.value.total_votes = response.total_votes
     }
+
+    // 保存到本地存储
+    saveLocalVote(pollId.value, selectedIds.value)
 
     // 延迟显示结果
     setTimeout(() => {

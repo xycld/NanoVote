@@ -1,5 +1,4 @@
 import json
-import hashlib
 from typing import Optional, List, Union, Dict, Any
 from redis.asyncio import Redis
 from redis.exceptions import ResponseError
@@ -15,11 +14,12 @@ class VoteService:
         self,
         poll_id: str,
         option_id: Optional[int] = None,
-        option_ids: Optional[List[int]] = None,
-        client_ip: str = ""
+        option_ids: Optional[List[int]] = None
     ) -> tuple[bool, Optional[Union[str, Dict[str, Any]]], List[PollOption], int]:
         """
         投票（支持单选和多选）
+
+        注意：不进行服务端IP检测，投票限制由客户端本地存储实现
 
         Returns:
             (success, error_message, updated_options, total_votes)
@@ -62,15 +62,7 @@ class VoteService:
             if not option_exists:
                 return False, {"code": "INVALID_OPTION", "option_id": opt_id}, [], 0
 
-        # 检查IP是否已投票
-        ip_hash = self._hash_ip(client_ip)
-        vote_key = f"poll:{poll_id}:vote:{ip_hash}"
-        already_voted = await self.redis.exists(vote_key)
-
-        if already_voted:
-            return False, {"code": "ALREADY_VOTED"}, [], 0
-
-        # 获取TTL用于设置IP记录的过期时间
+        # 获取TTL检查投票是否过期
         poll_ttl = await self.redis.ttl(f"poll:{poll_id}")
         if poll_ttl <= 0:
             return False, {"code": "POLL_EXPIRED"}, [], 0
@@ -79,14 +71,7 @@ class VoteService:
         lua_script = """
         local options_key = KEYS[1]
         local stats_key = KEYS[2]
-        local vote_key = KEYS[3]
         local option_ids_json = ARGV[1]
-        local ttl = tonumber(ARGV[2])
-
-        -- 已投过票则直接返回错误，避免并发下重复计数
-        if redis.call('EXISTS', vote_key) == 1 then
-            return redis.error_reply('ALREADY_VOTED')
-        end
 
         -- 解析选项ID列表
         local option_ids = cjson.decode(option_ids_json)
@@ -107,27 +92,19 @@ class VoteService:
         redis.call('HINCRBY', stats_key, 'total_votes', #option_ids)
         redis.call('HINCRBY', stats_key, 'unique_voters', 1)
 
-        -- 记录IP投票（保存为JSON数组）
-        redis.call('SETEX', vote_key, ttl, option_ids_json)
-
         return 'OK'
         """
 
         try:
             await self.redis.eval(
                 lua_script,
-                3,
+                2,
                 options_key,
                 f"poll:{poll_id}:stats",
-                vote_key,
-                json.dumps(voting_options),
-                str(poll_ttl)
+                json.dumps(voting_options)
             )
         except ResponseError as e:
             message = str(e)
-
-            if "ALREADY_VOTED" in message:
-                return False, {"code": "ALREADY_VOTED"}, [], 0
 
             if message.startswith("INVALID_OPTION:"):
                 try:
@@ -160,8 +137,3 @@ class VoteService:
         total_votes = int(stats_data.get("total_votes", 0))
 
         return True, None, options, total_votes
-
-    @staticmethod
-    def _hash_ip(ip: str) -> str:
-        """哈希IP地址（隐私保护）"""
-        return hashlib.sha256(ip.encode()).hexdigest()[:16]

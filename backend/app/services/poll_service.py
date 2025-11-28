@@ -1,7 +1,6 @@
 import uuid
 import time
 import json
-import hashlib
 from typing import Optional, List
 from redis.asyncio import Redis
 
@@ -83,10 +82,12 @@ class PollService:
 
     async def get_poll(
         self,
-        poll_id: str,
-        client_ip: str
+        poll_id: str
     ) -> Optional[PollResponse]:
-        """获取投票详情"""
+        """获取投票详情
+
+        注意：不进行服务端IP检测，has_voted和voted_for由客户端本地存储管理
+        """
         poll_key = f"poll:{poll_id}"
 
         # 检查投票是否存在
@@ -98,20 +99,6 @@ class PollService:
         poll_data = await self.redis.hgetall(poll_key)
         options_data = await self.redis.hgetall(f"poll:{poll_id}:options")
         stats_data = await self.redis.hgetall(f"poll:{poll_id}:stats")
-
-        # 检查IP是否已投票
-        ip_hash = self._hash_ip(client_ip)
-        voted_for_str = await self.redis.get(f"poll:{poll_id}:vote:{ip_hash}")
-
-        # 解析 voted_for（支持单选和多选）
-        voted_for = None
-        if voted_for_str:
-            try:
-                # 尝试解析为 JSON 数组（多选）
-                voted_for = json.loads(voted_for_str)
-            except (json.JSONDecodeError, ValueError):
-                # 单个数字（单选）
-                voted_for = int(voted_for_str)
 
         # 构造选项列表
         options = []
@@ -137,8 +124,8 @@ class PollService:
             options=options,
             total_votes=int(stats_data.get("total_votes", 0)),
             expires_at=int(poll_data["expires_at"]),
-            has_voted=voted_for is not None,
-            voted_for=voted_for,
+            has_voted=False,  # 由客户端本地存储管理
+            voted_for=None,  # 由客户端本地存储管理
             allow_multiple=allow_multiple,
             min_selection=min_selection,
             max_selection=max_selection
@@ -147,8 +134,3 @@ class PollService:
     async def check_poll_exists(self, poll_id: str) -> bool:
         """检查投票是否存在"""
         return bool(await self.redis.exists(f"poll:{poll_id}"))
-
-    @staticmethod
-    def _hash_ip(ip: str) -> str:
-        """哈希IP地址（隐私保护）"""
-        return hashlib.sha256(ip.encode()).hexdigest()[:16]

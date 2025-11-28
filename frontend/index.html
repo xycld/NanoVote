@@ -32,40 +32,6 @@
 
   <!-- Favicon - 使用原来的渐变 SVG -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%234F46E5'/%3E%3Cstop offset='100%25' style='stop-color:%233730A3'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='32' y='32' width='448' height='448' rx='96' fill='url(%23g)'/%3E%3Cpath d='M 138 260 L 218 340 L 366 168' fill='none' stroke='%23FFF' stroke-width='72' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='366' cy='168' r='36' fill='%2314B8A6'/%3E%3C/svg%3E">
-
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          animation: {
-            'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
-            'scale-in': 'scaleIn 0.3s ease-out forwards',
-            'shimmer': 'shimmer 1.5s ease-in-out',
-          },
-          keyframes: {
-            fadeInUp: {
-              '0%': { opacity: '0', transform: 'translateY(10px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' },
-            },
-            scaleIn: {
-              '0%': { opacity: '0', transform: 'scale(0.8)' },
-              '100%': { opacity: '1', transform: 'scale(1)' },
-            },
-            shimmer: {
-              '0%': { transform: 'translateX(-100%) skewX(-12deg)' },
-              '100%': { transform: 'translateX(200%) skewX(-12deg)' },
-            },
-            expandWidth: {
-              'from': { width: '0%', opacity: '0' },
-              'to': { width: 'var(--target-width)', opacity: '1' },
-            }
-          }
-        }
-      }
-    }
-  </script>
 </head>
 <body>
   <div id="app"></div>

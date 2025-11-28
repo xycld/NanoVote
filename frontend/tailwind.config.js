@@ -24,7 +24,10 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.3s ease-in',
         'slide-up': 'slideUp 0.4s ease-out',
-        'progress': 'progress 0.6s ease-out'
+        'progress': 'progress 0.6s ease-out',
+        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+        'scale-in': 'scaleIn 0.3s ease-out forwards',
+        'shimmer': 'shimmer 1.5s ease-in-out',
       },
       keyframes: {
         fadeIn: {
@@ -38,6 +41,22 @@ export default {
         progress: {
           '0%': { width: '0%' },
           '100%': { width: 'var(--progress-width)' }
+        },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.8)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%) skewX(-12deg)' },
+          '100%': { transform: 'translateX(200%) skewX(-12deg)' },
+        },
+        expandWidth: {
+          'from': { width: '0%', opacity: '0' },
+          'to': { width: 'var(--target-width)', opacity: '1' },
         }
       }
     },
